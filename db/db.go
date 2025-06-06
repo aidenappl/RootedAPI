@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/aidenappl/rootedapi/env"
 	"github.com/go-sql-driver/mysql"
@@ -24,8 +23,10 @@ func PingDB() error {
 	if err != nil {
 		return err
 	}
+
 	ping := db.Ping()
 	db.Close()
+
 	return ping
 }
 
@@ -34,11 +35,6 @@ var DB = func() *sql.DB {
 	if err != nil {
 		panic(fmt.Errorf("error opening database: %w", err))
 	}
-
-	db.SetConnMaxLifetime(30 * time.Second)
-	db.SetConnMaxIdleTime(15 * time.Second)
-	db.SetMaxOpenConns(5000)
-	db.SetMaxIdleConns(5000)
 
 	return db
 }()
