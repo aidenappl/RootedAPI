@@ -4,26 +4,36 @@ import (
 	"net/http"
 
 	"github.com/aidenappl/rootedapi/db"
+	"github.com/aidenappl/rootedapi/responder"
 	"github.com/aidenappl/rootedapi/service"
 	"github.com/aidenappl/rootedapi/structs"
 )
 
+type HandleOrganisationsRequest struct {
+	structs.BaseListRequest
+}
+
 func HandleOrganisations(w http.ResponseWriter, r *http.Request) {
+
+	var req HandleOrganisationsRequest
+	if err := ParseURLParams(r, &req); err != nil {
+		responder.SendError(w, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
 	orgs, err := service.GetOrganisations(db.DB, service.GetOrganisationsRequest{
 		BaseListRequest: structs.BaseListRequest{
-			Limit:       50,     // Default limit
-			Offset:      0,      // Default offset
-			SortBy:      "name", // Default sort by name
-			SortOrder:   "asc",  // Default sort order
-			SearchQuery: "",     // No search query by default
+			Limit:     req.Limit,
+			Offset:    req.Offset,
+			SortOrder: req.SortOrder,
 		},
 	})
 	if err != nil {
-		http.Error(w, "Failed to retrieve organisations", http.StatusInternalServerError)
+		responder.SendError(w, http.StatusConflict, "Failed to retrieve organisations", err)
 		return
 	}
-	
-	
+
+	responder.New(w, orgs)
 }
 
 func HandleOrganisation(w http.ResponseWriter, r *http.Request) {

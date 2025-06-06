@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["aidenappl", "Organisation", "organisations", "rootedapi"]
+  "cSpell.words": [
+    "aidenappl",
+    "mapstructure",
+    "mitchellh",
+    "Organisation",
+    "organisations",
+    "rootedapi"
+  ]
 }

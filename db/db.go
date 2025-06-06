@@ -2,11 +2,10 @@ package db
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/aidenappl/rootedapi/env"
-	"github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -19,7 +18,7 @@ const (
 )
 
 func PingDB() error {
-	db, err := sql.Open("mysql", env.RootedDB)
+	db, err := sql.Open("postgres", env.RootedDB)
 	if err != nil {
 		return err
 	}
@@ -44,13 +43,4 @@ type Queryable interface {
 	Prepare(query string) (*sql.Stmt, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	QueryRow(query string, args ...interface{}) *sql.Row
-}
-
-func ExtractDBErrorCode(err error) uint16 {
-	var sqlErr *mysql.MySQLError
-	if errors.As(err, &sqlErr) {
-		return sqlErr.Number
-	} else {
-		return 0
-	}
 }
