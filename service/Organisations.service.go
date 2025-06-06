@@ -8,6 +8,7 @@ import (
 )
 
 type GetOrganisationsRequest struct {
+	WhereID *int `json:"where_id"`
 	structs.BaseListRequest
 }
 
@@ -49,6 +50,10 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 
 	if req.SearchQuery != nil {
 		q = q.Where(sq.Like{"name": "%" + *req.SearchQuery + "%"})
+	}
+
+	if req.WhereID != nil {
+		q = q.Where(sq.Eq{"o.id": *req.WhereID})
 	}
 
 	query, args, err := q.ToSql()
@@ -109,12 +114,9 @@ type GetOrganisationRequest struct {
 func GetOrganisation(db db.Queryable, req GetOrganisationRequest) (*structs.Organisation, error) {
 	orgs, err := GetOrganisations(db, GetOrganisationsRequest{
 		BaseListRequest: structs.BaseListRequest{
-			Limit:       tools.IntP(1),
-			Offset:      tools.IntP(0),
-			SortBy:      tools.StringP("id"),
-			SortOrder:   tools.StringP("asc"),
-			SearchQuery: tools.StringP("id:" + string(req.ID)),
+			Limit: tools.IntP(1),
 		},
+		WhereID: &req.ID,
 	})
 	if err != nil {
 		return nil, err

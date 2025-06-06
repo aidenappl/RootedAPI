@@ -18,6 +18,7 @@ func SendError(w http.ResponseWriter, status int, errMessage string, err ...inte
 		ErrorCode:    1000,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(errResp)
 }
@@ -37,6 +38,7 @@ func SendErrorWithParams(w http.ResponseWriter, err string, status int, errorCod
 		errResp.ErrorMessage = *errorMessage
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(errResp)
 }

@@ -2,11 +2,13 @@ package router
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/aidenappl/rootedapi/db"
 	"github.com/aidenappl/rootedapi/responder"
 	"github.com/aidenappl/rootedapi/service"
 	"github.com/aidenappl/rootedapi/structs"
+	"github.com/gorilla/mux"
 )
 
 type HandleOrganisationsRequest struct {
@@ -36,9 +38,36 @@ func HandleOrganisations(w http.ResponseWriter, r *http.Request) {
 	responder.New(w, orgs)
 }
 
+type HandleGetOrganisationRequest struct {
+	OrgID int `json:"org_id"`
+}
+
 func HandleOrganisation(w http.ResponseWriter, r *http.Request) {
-	// This function will handle the retrieval of all organisations
-	// For now, we will just return a placeholder response
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("List of all organisations"))
+	var req HandleGetOrganisationRequest
+	params := mux.Vars(r)
+	if orgID, ok := params["id"]; ok {
+		if orgID == "" {
+			responder.SendError(w, http.StatusBadRequest, "Organisation ID is required", nil)
+			return
+		}
+		intID, err := strconv.Atoi(orgID)
+		if err != nil {
+			responder.SendError(w, http.StatusBadRequest, "Invalid Organisation ID", err)
+			return
+		}
+		req.OrgID = intID
+	} else {
+		responder.SendError(w, http.StatusBadRequest, "Organisation ID is required", nil)
+		return
+	}
+
+	orgs, err := service.GetOrganisation(db.DB, service.GetOrganisationRequest{
+		ID: req.OrgID,
+	})
+	if err != nil {
+		responder.SendError(w, http.StatusConflict, "Failed to retrieve organisations", err)
+		return
+	}
+
+	responder.New(w, orgs)
 }
