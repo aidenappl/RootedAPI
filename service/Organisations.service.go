@@ -10,7 +10,8 @@ import (
 )
 
 type GetOrganisationsRequest struct {
-	WhereID *int `json:"where_id"`
+	WhereID  *int      `json:"where_id"`
+	Requires *[]string `json:"requires"`
 	structs.BaseListRequest
 }
 
@@ -30,6 +31,8 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 		"l.city",
 		"l.state",
 		"l.zip_code",
+		"l.lat",
+		"l.lng",
 
 		// Metadata fields
 		"m.id as metadata_id",
@@ -46,6 +49,16 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 		q = q.OrderBy(*req.SortBy + " " + *req.SortOrder)
 	} else {
 		q = q.OrderBy("o.id DESC")
+	}
+
+	if req.Requires != nil {
+		for _, require := range *req.Requires {
+			// only show organisations with the following requirements
+			switch require {
+			case "coordinates":
+				q = q.Where("l.lat IS NOT NULL AND l.lng IS NOT NULL")
+			}
+		}
 	}
 
 	q = ApplyPagination(q, req.Limit, req.Offset)
@@ -88,6 +101,8 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 			&loc.Location.City,
 			&loc.Location.State,
 			&loc.Location.ZipCode,
+			&loc.Location.Lat,
+			&loc.Location.Lng,
 
 			&metadata.ID,
 			&metadata.GrossReceipts,

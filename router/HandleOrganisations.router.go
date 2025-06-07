@@ -12,6 +12,7 @@ import (
 )
 
 type HandleOrganisationsRequest struct {
+	Requires *[]string `json:"requires"`
 	structs.BaseListRequest
 }
 
@@ -29,6 +30,7 @@ func HandleOrganisations(w http.ResponseWriter, r *http.Request) {
 			Offset:    req.Offset,
 			SortOrder: req.SortOrder,
 		},
+		Requires: req.Requires,
 	})
 	if err != nil {
 		responder.SendError(w, http.StatusConflict, "Failed to retrieve organisations", err)
