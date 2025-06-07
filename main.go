@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/aidenappl/rootedapi/db"
 	"github.com/aidenappl/rootedapi/env"
 	"github.com/aidenappl/rootedapi/router"
 	"github.com/gorilla/mux"
@@ -12,6 +13,12 @@ import (
 )
 
 func main() {
+
+	// Ping DB
+	if err := db.PingDB(); err != nil {
+		log.Fatalf("❌ Failed to connect to the database: %v", err)
+	}
+
 	r := mux.NewRouter()
 
 	// Public Endpoints
