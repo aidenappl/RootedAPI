@@ -1,7 +1,7 @@
 package structs
 
 type Location struct {
-	ID             int     `json:"id"`
+	ID             *int    `json:"location_id"`
 	OrganisationID *int    `json:"organisation_id,omitempty"`
 	AddressLine1   *string `json:"address_line1"`
 	City           *string `json:"city"`

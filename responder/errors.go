@@ -11,11 +11,14 @@ type ErrorResponse struct {
 	ErrorCode    int    `json:"error_code"`
 }
 
-func SendError(w http.ResponseWriter, status int, errMessage string, err ...interface{}) {
+func SendError(w http.ResponseWriter, status int, errMessage string, err ...error) {
 	errResp := ErrorResponse{
-		Error:        err,
+		Error:        nil,
 		ErrorMessage: errMessage,
 		ErrorCode:    1000,
+	}
+	if len(err) > 0 && err[0] != nil {
+		errResp.Error = err[0].Error()
 	}
 
 	w.Header().Set("Content-Type", "application/json")

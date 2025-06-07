@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/aidenappl/rootedapi/db"
 	"github.com/aidenappl/rootedapi/structs"
@@ -43,7 +45,7 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 	if req.SortBy != nil {
 		q = q.OrderBy(*req.SortBy + " " + *req.SortOrder)
 	} else {
-		q = q.OrderBy("id desc")
+		q = q.OrderBy("o.id DESC")
 	}
 
 	q = ApplyPagination(q, req.Limit, req.Offset)
@@ -53,17 +55,17 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 	}
 
 	if req.WhereID != nil {
-		q = q.Where(sq.Eq{"o.id": *req.WhereID})
+		q = q.Where("o.id = $1", *req.WhereID)
 	}
 
 	query, args, err := q.ToSql()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("error building SQL query: " + err.Error())
 	}
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("error executing query: " + err.Error())
 	}
 
 	defer rows.Close()
@@ -102,24 +104,92 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 		organisations = append(organisations, org)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, errors.New("error reading rows: " + err.Error())
 	}
 	return &organisations, nil
 }
 
-type GetOrganisationRequest struct {
-	ID int `json:"id"`
-}
-
-func GetOrganisation(db db.Queryable, req GetOrganisationRequest) (*structs.Organisation, error) {
+func GetOrganisation(db db.Queryable, ID int) (*structs.Organisation, error) {
 	orgs, err := GetOrganisations(db, GetOrganisationsRequest{
 		BaseListRequest: structs.BaseListRequest{
 			Limit: tools.IntP(1),
 		},
-		WhereID: &req.ID,
+		WhereID: &ID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.New("error retrieving organisation: " + err.Error())
 	}
+
+	if len(*orgs) == 0 {
+		return nil, errors.New("organisation not found")
+	}
+
 	return &(*orgs)[0], nil
+}
+
+func GetOrganisationPeople(db db.Queryable, orgID int) (*[]structs.Person, error) {
+	q := sq.Select(
+		"p.id",
+		"p.name",
+		"p.bookkeeper",
+		"p.title",
+		"p.phone_number",
+		"p.average_hours",
+		"p.compensation",
+
+		// People Locations
+		"pl.id as person_location_id",
+		"pl.address_line_1",
+		"pl.city",
+		"pl.state",
+		"pl.zip_code",
+	).
+		From("website.people p").
+		Where("p.organisation_id = $1", orgID).
+		OrderBy("p.id DESC").
+		LeftJoin("website.people_locations pl ON p.id = pl.person_id")
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return nil, errors.New("error building SQL query: " + err.Error())
+	}
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, errors.New("error executing query: " + err.Error())
+	}
+
+	defer rows.Close()
+	var people []structs.Person
+	for rows.Next() {
+		var person structs.Person
+		var personLocation structs.PeopleLocation
+		if err := rows.Scan(
+			&person.ID,
+			&person.Name,
+			&person.Bookkeeper,
+			&person.Title,
+			&person.PhoneNumber,
+			&person.AverageHoursPerWeek,
+			&person.Compensation,
+
+			&personLocation.Location.ID,
+			&personLocation.Location.AddressLine1,
+			&personLocation.Location.City,
+			&personLocation.Location.State,
+			&personLocation.Location.ZipCode,
+		); err != nil {
+			return nil, err
+		}
+		if personLocation.Location.ID != nil {
+			person.Location = &personLocation
+		} else {
+			person.Location = nil
+		}
+		people = append(people, person)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, errors.New("error reading rows: " + err.Error())
+	}
+	return &people, nil
 }

@@ -20,6 +20,8 @@ func main() {
 	r.HandleFunc("/organisations", router.HandleOrganisations).Methods("GET")
 	// - This endpoint retrieves a specific organisation by ID
 	r.HandleFunc("/organisations/{id}", router.HandleOrganisation).Methods("GET")
+	// - This endpoint retrieves the people associated with a specific organisation by ID
+	r.HandleFunc("/organisations/{id}/people", router.HandleOrganisationPeople).Methods("GET")
 
 	// Health Check Endpoint
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

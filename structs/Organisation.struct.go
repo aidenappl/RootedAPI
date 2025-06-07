@@ -9,7 +9,7 @@ type Organisation struct {
 	Website     *string               `json:"website"`
 	Description *string               `json:"description"`
 	Location    *Location             `json:"location"`
-	People      *[]Person             `json:"people"`
+	People      *[]Person             `json:"people,omitempty"`
 	Metadata    *OrganisationMetadata `json:"metadata"`
 }
 

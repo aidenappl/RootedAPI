@@ -61,13 +61,44 @@ func HandleOrganisation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orgs, err := service.GetOrganisation(db.DB, service.GetOrganisationRequest{
-		ID: req.OrgID,
-	})
+	orgs, err := service.GetOrganisation(db.DB, req.OrgID)
 	if err != nil {
 		responder.SendError(w, http.StatusConflict, "Failed to retrieve organisations", err)
 		return
 	}
 
 	responder.New(w, orgs)
+}
+
+// HandleOrganisationPeople handles the request to get people associated with an organisation
+type HandleOrganisationPeopleRequest struct {
+	OrgID int `json:"org_id"`
+}
+
+func HandleOrganisationPeople(w http.ResponseWriter, r *http.Request) {
+	var req HandleOrganisationPeopleRequest
+	params := mux.Vars(r)
+	if orgID, ok := params["id"]; ok {
+		if orgID == "" {
+			responder.SendError(w, http.StatusBadRequest, "Organisation ID is required", nil)
+			return
+		}
+		intID, err := strconv.Atoi(orgID)
+		if err != nil {
+			responder.SendError(w, http.StatusBadRequest, "Invalid Organisation ID", err)
+			return
+		}
+		req.OrgID = intID
+	} else {
+		responder.SendError(w, http.StatusBadRequest, "Organisation ID is required", nil)
+		return
+	}
+
+	people, err := service.GetOrganisationPeople(db.DB, req.OrgID)
+	if err != nil {
+		responder.SendError(w, http.StatusConflict, "Failed to retrieve people for organisation", err)
+		return
+	}
+
+	responder.New(w, people)
 }
