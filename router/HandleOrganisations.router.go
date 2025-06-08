@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/aidenappl/rootedapi/db"
 	"github.com/aidenappl/rootedapi/responder"
@@ -13,7 +14,7 @@ import (
 
 type HandleOrganisationsRequest struct {
 	Requires   *[]string `json:"requires"`
-	Categories *[]string `json:"categories"`
+	Categories *string   `json:"categories"`
 	structs.PointSearch
 	structs.BaseListRequest
 }
@@ -24,6 +25,20 @@ func HandleOrganisations(w http.ResponseWriter, r *http.Request) {
 	if err := ParseURLParams(r, &req); err != nil {
 		responder.SendError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
+	}
+
+	parsedCategories := []string{}
+	if req.Categories != nil && *req.Categories != "" {
+		// Split categories by comma and trim whitespace
+		categories := strings.Split(*req.Categories, ",")
+		for _, category := range categories {
+			trimmed := strings.TrimSpace(category)
+			if trimmed != "" {
+				parsedCategories = append(parsedCategories, trimmed)
+			}
+		}
+	} else {
+		req.Categories = nil
 	}
 
 	orgs, err := service.GetOrganisations(db.DB, service.GetOrganisationsRequest{
@@ -38,7 +53,7 @@ func HandleOrganisations(w http.ResponseWriter, r *http.Request) {
 			Radius: req.Radius,
 		},
 		Requires:   req.Requires,
-		Categories: req.Categories,
+		Categories: &parsedCategories,
 	})
 	if err != nil {
 		responder.SendError(w, http.StatusConflict, "Failed to retrieve organisations", err)
