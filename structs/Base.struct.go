@@ -15,5 +15,5 @@ const (
 	SortOrderAsc     = "asc"
 	SortOrderDesc    = "desc"
 	DefaultListLimit = 25
-	MaximumListLimit = 100
+	MaximumListLimit = 500
 )
