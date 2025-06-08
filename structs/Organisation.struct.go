@@ -1,16 +1,18 @@
 package structs
 
 type Organisation struct {
-	ID          int                   `json:"id"`
-	Name        string                `json:"name"`
-	EIN         string                `json:"ein"`
-	DLN         *string               `json:"dln"`
-	XMLBatchID  *string               `json:"xml_batch_id"`
-	Website     *string               `json:"website"`
-	Description *string               `json:"description"`
-	Location    *Location             `json:"location"`
-	People      *[]Person             `json:"people,omitempty"`
-	Metadata    *OrganisationMetadata `json:"metadata"`
+	ID                        int                   `json:"id"`
+	Name                      string                `json:"name"`
+	EIN                       string                `json:"ein"`
+	DLN                       *string               `json:"dln"`
+	XMLBatchID                *string               `json:"xml_batch_id"`
+	Website                   *string               `json:"website"`
+	Description               *string               `json:"description"`
+	Location                  *Location             `json:"location"`
+	People                    *[]Person             `json:"people,omitempty"`
+	Metadata                  *OrganisationMetadata `json:"metadata"`
+	HasContributedInformation bool                  `json:"has_contributed_information"`
+	UpdatedAt                 *string               `json:"updated_at"`
 }
 
 type OrganisationMetadata struct {

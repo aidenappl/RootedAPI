@@ -27,6 +27,8 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 		"o.xml_batch_id",
 		"o.website",
 		"o.description",
+		"o.has_contributed_information",
+		"o.updated_at",
 
 		// Location fields
 		"l.id as location_id",
@@ -108,6 +110,8 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 			&org.XMLBatchID,
 			&org.Website,
 			&org.Description,
+			&org.HasContributedInformation,
+			&org.UpdatedAt,
 
 			&loc.Location.ID,
 			&loc.Location.AddressLine1,
