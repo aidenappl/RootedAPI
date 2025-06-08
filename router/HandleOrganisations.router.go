@@ -12,7 +12,8 @@ import (
 )
 
 type HandleOrganisationsRequest struct {
-	Requires *[]string `json:"requires"`
+	Requires   *[]string `json:"requires"`
+	Categories *[]string `json:"categories"`
 	structs.PointSearch
 	structs.BaseListRequest
 }
@@ -36,7 +37,8 @@ func HandleOrganisations(w http.ResponseWriter, r *http.Request) {
 			Lng:    req.Lng,
 			Radius: req.Radius,
 		},
-		Requires: req.Requires,
+		Requires:   req.Requires,
+		Categories: req.Categories,
 	})
 	if err != nil {
 		responder.SendError(w, http.StatusConflict, "Failed to retrieve organisations", err)

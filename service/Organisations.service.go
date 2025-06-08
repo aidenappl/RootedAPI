@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/aidenappl/rootedapi/db"
@@ -10,9 +11,10 @@ import (
 )
 
 type GetOrganisationsRequest struct {
-	WhereID  *int                 `json:"where_id"`
-	Requires *[]string            `json:"requires"`
-	Location *structs.PointSearch `json:"location,omitempty"`
+	WhereID    *int                 `json:"where_id"`
+	Requires   *[]string            `json:"requires"`
+	Categories *[]string            `json:"categories"`
+	Location   *structs.PointSearch `json:"location,omitempty"`
 	structs.BaseListRequest
 }
 
@@ -54,6 +56,51 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 		q = q.OrderBy(*req.SortBy + " " + *req.SortOrder)
 	} else {
 		q = q.OrderBy("o.id DESC")
+	}
+
+	if req.Categories != nil {
+		for _, category := range *req.Categories {
+			cat := strings.ToLower(category)
+			// only show organisations with the following categories
+			switch cat {
+			case "food":
+				q = q.Where(sq.Or{
+					sq.Expr("o.description ILIKE '%food%'"),
+					sq.Expr("o.description ILIKE '%meal%'"),
+					sq.Expr("o.description ILIKE '%meals%'"),
+					sq.Expr("o.description ILIKE '%hunger%'"),
+					sq.Expr("o.description ILIKE '%hungry%'"),
+					sq.Expr("o.description ILIKE '%nutrition%'"),
+					sq.Expr("o.description ILIKE '%nutritional%'"),
+					sq.Expr("o.description ILIKE '%kitchen%'"),
+					sq.Expr("o.description ILIKE '%soup kitchen%'"),
+					sq.Expr("o.description ILIKE '%pantry%'"),
+					sq.Expr("o.description ILIKE '%food bank%'"),
+					sq.Expr("o.description ILIKE '%grocery%'"),
+					sq.Expr("o.description ILIKE '%feeding%'"),
+					sq.Expr("o.description ILIKE '%lunch%'"),
+					sq.Expr("o.description ILIKE '%breakfast%'"),
+					sq.Expr("o.description ILIKE '%dinner%'"),
+					sq.Expr("o.description ILIKE '%culinary%'"),
+					sq.Expr("o.description ILIKE '%snack%'"),
+					sq.Expr("o.name ILIKE '%food%'"),
+					sq.Expr("o.name ILIKE '%meal%'"),
+					sq.Expr("o.name ILIKE '%meals%'"),
+					sq.Expr("o.name ILIKE '%hunger%'"),
+					sq.Expr("o.name ILIKE '%kitchen%'"),
+					sq.Expr("o.name ILIKE '%pantry%'"),
+					sq.Expr("o.name ILIKE '%feeding%'"),
+					sq.Expr("o.name ILIKE '%nutrition%'"),
+					sq.Expr("o.name ILIKE '%food bank%'"),
+					sq.Expr("o.name ILIKE '%lunch%'"),
+					sq.Expr("o.name ILIKE '%breakfast%'"),
+					sq.Expr("o.name ILIKE '%dinner%'"),
+					sq.Expr("o.name ILIKE '%culinary%'"),
+				})
+			case "shelter":
+				q = q.Where("o.category = 'shelter'")
+			}
+		}
 	}
 
 	if req.Requires != nil {
