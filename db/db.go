@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/aidenappl/rootedapi/env"
 	_ "github.com/lib/pq"
 )
@@ -37,6 +38,8 @@ var DB = func() *sql.DB {
 
 	return db
 }()
+
+var Psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 type Queryable interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)

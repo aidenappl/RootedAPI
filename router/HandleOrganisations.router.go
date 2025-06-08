@@ -13,6 +13,7 @@ import (
 
 type HandleOrganisationsRequest struct {
 	Requires *[]string `json:"requires"`
+	structs.PointSearch
 	structs.BaseListRequest
 }
 
@@ -29,6 +30,11 @@ func HandleOrganisations(w http.ResponseWriter, r *http.Request) {
 			Limit:     req.Limit,
 			Offset:    req.Offset,
 			SortOrder: req.SortOrder,
+		},
+		Location: &structs.PointSearch{
+			Lat:    req.Lat,
+			Lng:    req.Lng,
+			Radius: req.Radius,
 		},
 		Requires: req.Requires,
 	})

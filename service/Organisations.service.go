@@ -10,13 +10,16 @@ import (
 )
 
 type GetOrganisationsRequest struct {
-	WhereID  *int      `json:"where_id"`
-	Requires *[]string `json:"requires"`
+	WhereID  *int                 `json:"where_id"`
+	Requires *[]string            `json:"requires"`
+	Location *structs.PointSearch `json:"location,omitempty"`
 	structs.BaseListRequest
 }
 
+var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
 func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.Organisation, error) {
-	q := sq.Select(
+	q := psql.Select(
 		"o.id",
 		"o.name",
 		"o.ein",
@@ -59,6 +62,16 @@ func GetOrganisations(db db.Queryable, req GetOrganisationsRequest) (*[]structs.
 				q = q.Where("l.lat IS NOT NULL AND l.lng IS NOT NULL")
 			}
 		}
+	}
+
+	if req.Location != nil &&
+		req.Location.Lat != 0 &&
+		req.Location.Lng != 0 &&
+		req.Location.Radius != 0 {
+
+		q = q.Where(sq.Expr(
+			"ST_DWithin(point, ST_MakePoint(?, ?)::geography, ?)",
+			&req.Location.Lng, &req.Location.Lat, &req.Location.Radius))
 	}
 
 	q = ApplyPagination(q, req.Limit, req.Offset)
@@ -143,7 +156,7 @@ func GetOrganisation(db db.Queryable, ID int) (*structs.Organisation, error) {
 }
 
 func GetOrganisationPeople(db db.Queryable, orgID int) (*[]structs.Person, error) {
-	q := sq.Select(
+	q := psql.Select(
 		"p.id",
 		"p.name",
 		"p.bookkeeper",
