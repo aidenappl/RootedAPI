@@ -21,6 +21,13 @@ func main() {
 
 	r := mux.NewRouter()
 
+	// Base API Endpoint
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Welcome to the Rooted API!"))
+	}).Methods("GET")
+	
+
 	// Public Endpoints
 	// [Organisations]
 	// - This endpoint retrieves a list of all organisations
@@ -40,6 +47,7 @@ func main() {
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins: []string{
 			"http://localhost:3000",
+			"https://rootedtogether.info",
 		},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"*"},
