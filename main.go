@@ -26,7 +26,6 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Welcome to the Rooted API!"))
 	}).Methods("GET")
-	
 
 	// Public Endpoints
 	// [Organisations]
@@ -47,6 +46,7 @@ func main() {
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins: []string{
 			"http://localhost:3000",
+			"http://localhost:8002",
 			"https://rootedtogether.info",
 		},
 		AllowCredentials: true,
