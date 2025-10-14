@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/aidenappl/rootedapi/background"
 	"github.com/aidenappl/rootedapi/db"
 	"github.com/aidenappl/rootedapi/env"
 	"github.com/aidenappl/rootedapi/router"
@@ -18,6 +20,10 @@ func main() {
 	if err := db.PingDB(); err != nil {
 		log.Fatalf("❌ Failed to connect to the database: %v", err)
 	}
+
+	// Create context with cancel
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	r := mux.NewRouter()
 
@@ -53,6 +59,9 @@ func main() {
 		AllowedHeaders:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	})
+
+	// Start Health Check Polling in the background
+	background.StartHealthCheckPolling(ctx)
 
 	fmt.Printf("✅ Rooted API running on port %s\n", env.Port)
 	log.Fatal(http.ListenAndServe(":"+env.Port, corsMiddleware.Handler(r)))
