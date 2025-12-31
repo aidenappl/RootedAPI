@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	RootedDB = getEnvOrPanic("ROOTED_DB")
-	Port     = getEnv("PORT", "8000")
+	RootedDB       = getEnvOrPanic("ROOTED_DB")
+	Port           = getEnv("PORT", "8000")
 	HealthCheckURL = getEnvOrPanic("HEALTH_CHECK_URL")
 )
 

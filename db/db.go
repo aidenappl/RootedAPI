@@ -9,15 +9,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	DefaultListLimit = 50
-	MaximumListLimit = 100
-
-	ErNoReferencedRow     = 1215
-	ErDupEntry            = 1062
-	ErDupEntryWithKeyName = 1586
-)
-
 func PingDB() error {
 	db, err := sql.Open("postgres", env.RootedDB)
 	if err != nil {
